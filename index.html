@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Agents - Enterprise Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #2d2d3a;
+        }
+
+        .light-mode {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #e2e8f0;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 30px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin: 4px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Main Content */
+        .main {
+            margin-left: 260px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+        }
+
+        .theme-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Cards */
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .stat-card .change {
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+
+        .stat-card .change.up {
+            color: var(--success);
+        }
+
+        .stat-card .change.down {
+            color: var(--danger);
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 250px;
+        }
+
+        /* Activity Feed */
+        .feed-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .feed-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .feed-icon.llm {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .feed-icon.tool {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .feed-icon.cache {
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        .feed-icon.dlp {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .feed-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Tools Grid */
+        .tool-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .tool-icon {
+            font-size: 2rem;
+        }
+
+        .tool-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+        }
+
+        .tool-status.active {
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        .tool-status.inactive {
+            background: var(--text-secondary);
+        }
+
+        /* Trace View */
+        .trace-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .trace-header {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .trace-type {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--accent);
+            color: white;
+        }
+
+        .trace-duration {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .grid-4,
+            .grid-3,
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo">🤖 MCP Agents</div>
+            <div class="nav-item active" onclick="showPage('dashboard')">📊 Dashboard</div>
+            <div class="nav-item" onclick="showPage('router')">🎯 Intelligent Router</div>
+            <div class="nav-item" onclick="showPage('cache')">💾 Semantic Cache</div>
+            <div class="nav-item" onclick="showPage('observability')">🔍 Observability</div>
+            <div class="nav-item" onclick="showPage('tools')">🔧 Tool Manager</div>
+            <div class="nav-item" onclick="showPage('dlp')">🛡️ DLP Policy</div>
+            <div class="nav-item" onclick="showPage('costs')">💰 Cost Monitor</div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="header">
+                <h1 id="page-title">Enterprise Dashboard</h1>
+                <div style="display:flex;gap:12px;">
+                    <button class="btn btn-primary" onclick="exportData()">📥 Export</button>
+                    <button class="theme-btn" onclick="toggleTheme()">
+                        <span id="theme-icon">🌙</span>
+                        <span id="theme-text">Dark Mode</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Page -->
+            <div id="page-dashboard" class="page">
+                <div class="grid grid-4" style="margin-bottom:20px;">
+                    <div class="card stat-card">
+                        <div class="card-title">Total Queries</div>
+                        <div class="value" id="total-queries">1,284</div>
+                        <div class="change up">↑ 12% from yesterday</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="value" style="color:var(--success);" id="cache-rate">67%</div>
+                        <div class="card-title">Cache Hit Rate</div>
+                        <div class="change up">↑ 8% saved</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="value" id="cost-saved">$42.50</div>
+                        <div class="card-title">Cost Saved Today</div>
+                        <div class="change up">↑ via smart routing</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="value" id="avg-latency">287ms</div>
+                        <div class="card-title">Avg Latency</div>
+                        <div class="change down">↓ 15% faster</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Model Distribution</span></div>
+                        <div class="chart-container"><canvas id="modelChart"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Query Complexity</span></div>
+                        <div class="chart-container"><canvas id="complexityChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-2" style="margin-top:20px;">
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Cost Over Time</span></div>
+                        <div class="chart-container"><canvas id="costChart"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Live Activity</span></div>
+                        <div id="activity-feed"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Router Page -->
+            <div id="page-router" class="page" style="display:none;">
+                <div class="grid grid-3" style="margin-bottom:20px;">
+                    <div class="card stat-card">
+                        <div class="card-title">Routing Decisions</div>
+                        <div class="value">856</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="card-title">Avg Decision Time</div>
+                        <div class="value">12ms</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="card-title">Cost Optimization</div>
+                        <div class="value" style="color:var(--success);">38%</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">LLM-as-a-Judge Complexity Analysis</div>
+                    <div class="chart-container"><canvas id="routerChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Cache Page -->
+            <div id="page-cache" class="page" style="display:none;">
+                <div class="grid grid-4" style="margin-bottom:20px;">
+                    <div class="card stat-card">
+                        <div class="card-title">Cache Size</div>
+                        <div class="value">2,456</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="card-title">Exact Hits</div>
+                        <div class="value">423</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="card-title">Semantic Hits</div>
+                        <div class="value">312</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="card-title">Miss Rate</div>
+                        <div class="value">33%</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Semantic Cache Performance</div>
+                    <div class="chart-container"><canvas id="cacheChart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Observability Page -->
+            <div id="page-observability" class="page" style="display:none;">
+                <div class="grid grid-3" style="margin-bottom:20px;">
+                    <div class="card stat-card">
+                        <div class="card-title">Total Traces</div>
+                        <div class="value">1,892</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="card-title">Total Spans</div>
+                        <div class="value">8,456</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="card-title">Error Rate</div>
+                        <div class="value" style="color:var(--danger);">0.3%</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Recent Traces</div>
+                    <div id="traces-list"></div>
+                </div>
+            </div>
+
+            <!-- Tools Page -->
+            <div id="page-tools" class="page" style="display:none;">
+                <div class="grid grid-3" id="tools-grid"></div>
+            </div>
+
+            <!-- DLP Page -->
+            <div id="page-dlp" class="page" style="display:none;">
+                <div class="grid grid-4" style="margin-bottom:20px;">
+                    <div class="card stat-card">
+                        <div class="card-title">Total Scans</div>
+                        <div class="value">4,523</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="card-title">Violations</div>
+                        <div class="value" style="color:var(--danger);">23</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="card-title">Blocked</div>
+                        <div class="value">18</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="card-title">Masked</div>
+                        <div class="value">5</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">DLP Rules Status</div>
+                    <div id="dlp-rules"></div>
+                </div>
+            </div>
+
+            <!-- Costs Page -->
+            <div id="page-costs" class="page" style="display:none;">
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-title">Cost by Model</div>
+                        <div class="chart-container"><canvas id="costByModelChart"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Daily Cost Trend</div>
+                        <div class="chart-container"><canvas id="dailyCostChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let isLightMode = false;
+        let charts = {};
+
+        // Theme Toggle
+        function toggleTheme() {
+            isLightMode = !isLightMode;
+            document.body.classList.toggle('light-mode');
+            document.getElementById('theme-icon').textContent = isLightMode ? '☀️' : '🌙';
+            document.getElementById('theme-text').textContent = isLightMode ? 'Light Mode' : 'Dark Mode';
+            initCharts();
+        }
+
+        // Page Navigation
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('page-' + page).style.display = 'block';
+            event.target.classList.add('active');
+
+            const titles = {
+                dashboard: 'Enterprise Dashboard',
+                router: 'Intelligent Router',
+                cache: 'Semantic Cache',
+                observability: 'Observability & Tracing',
+                tools: 'Tool Manager',
+                dlp: 'DLP Policy Engine',
+                costs: 'Cost Monitor'
+            };
+            document.getElementById('page-title').textContent = titles[page];
+        }
+
+        // Chart Colors
+        function getColors() {
+            return isLightMode
+                ? { text: '#1e293b', grid: '#e2e8f0' }
+                : { text: '#94a3b8', grid: '#2d2d3a' };
+        }
+
+        // Initialize Charts
+        function initCharts() {
+            const colors = getColors();
+            Object.values(charts).forEach(c => c.destroy());
+
+            // Model Distribution
+            charts.model = new Chart(document.getElementById('modelChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['GPT-4o-mini', 'Claude 3.5', 'Gemini Flash', 'Claude Opus'],
+                    datasets: [{ data: [45, 30, 20, 5], backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444'] }]
+                },
+                options: { plugins: { legend: { labels: { color: colors.text } } } }
+            });
+
+            // Complexity
+            charts.complexity = new Chart(document.getElementById('complexityChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Trivial', 'Simple', 'Moderate', 'Complex', 'Expert'],
+                    datasets: [{ label: 'Queries', data: [120, 230, 180, 90, 35], backgroundColor: '#6366f1' }]
+                },
+                options: { scales: { y: { grid: { color: colors.grid }, ticks: { color: colors.text } }, x: { ticks: { color: colors.text } } } }
+            });
+
+            // Cost Over Time
+            charts.cost = new Chart(document.getElementById('costChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [
+                        { label: 'Actual', data: [45, 52, 38, 65, 42, 28, 35], borderColor: '#6366f1', tension: 0.4 },
+                        { label: 'Saved', data: [15, 22, 18, 25, 20, 12, 18], borderColor: '#10b981', tension: 0.4 }
+                    ]
+                },
+                options: { scales: { y: { grid: { color: colors.grid }, ticks: { color: colors.text } }, x: { ticks: { color: colors.text } } } }
+            });
+
+            // Router
+            charts.router = new Chart(document.getElementById('routerChart'), {
+                type: 'radar',
+                data: {
+                    labels: ['Speed', 'Quality', 'Cost', 'Reliability', 'Complexity'],
+                    datasets: [
+                        { label: 'GPT-4o-mini', data: [9, 7, 9, 8, 6], borderColor: '#6366f1', fill: true, backgroundColor: 'rgba(99,102,241,0.2)' },
+                        { label: 'Claude 3.5', data: [7, 9, 7, 9, 9], borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16,185,129,0.2)' }
+                    ]
+                },
+                options: { scales: { r: { grid: { color: colors.grid }, pointLabels: { color: colors.text } } } }
+            });
+
+            // Cache
+            charts.cache = new Chart(document.getElementById('cacheChart'), {
+                type: 'line',
+                data: {
+                    labels: ['1h', '2h', '3h', '4h', '5h', '6h'],
+                    datasets: [
+                        { label: 'Hit Rate %', data: [62, 65, 68, 67, 71, 73], borderColor: '#10b981', tension: 0.4 },
+                        { label: 'Semantic Hits', data: [45, 48, 52, 55, 58, 62], borderColor: '#f59e0b', tension: 0.4 }
+                    ]
+                },
+                options: { scales: { y: { grid: { color: colors.grid } } } }
+            });
+
+            // Cost by Model
+            charts.costModel = new Chart(document.getElementById('costByModelChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['GPT-4o', 'Claude Opus', 'GPT-4o-mini', 'Gemini'],
+                    datasets: [{ data: [120, 85, 25, 15], backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444'] }]
+                }
+            });
+
+            // Daily Cost
+            charts.daily = new Chart(document.getElementById('dailyCostChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                    datasets: [{ label: 'Cost ($)', data: [45, 52, 38, 65, 42], backgroundColor: '#6366f1' }]
+                }
+            });
+        }
+
+        // Activity Feed
+        function updateActivityFeed() {
+            const activities = [
+                { type: 'llm', icon: '🤖', text: 'LLM Call: gpt-4o-mini (156 tokens)', time: '2s ago' },
+                { type: 'cache', icon: '💾', text: 'Cache HIT: Semantic match 94%', time: '5s ago' },
+                { type: 'tool', icon: '🔧', text: 'Tool Call: github.list_repos', time: '8s ago' },
+                { type: 'dlp', icon: '🛡️', text: 'DLP: Blocked credit card leak', time: '12s ago' },
+                { type: 'llm', icon: '🤖', text: 'Routing: COMPLEX → Claude 3.5', time: '15s ago' },
+            ];
+
+            document.getElementById('activity-feed').innerHTML = activities.map(a => `
+                <div class="feed-item">
+                    <div class="feed-icon ${a.type}">${a.icon}</div>
+                    <div><div>${a.text}</div><div class="feed-time">${a.time}</div></div>
+                </div>
+            `).join('');
+        }
+
+        // Traces
+        function updateTraces() {
+            const traces = [
+                { id: 'TRC-001', name: 'Query Processing', duration: '245ms', spans: 5, type: 'agent' },
+                { id: 'TRC-002', name: 'Tool Execution', duration: '120ms', spans: 3, type: 'tool_call' },
+                { id: 'TRC-003', name: 'Cache Lookup', duration: '12ms', spans: 2, type: 'cache' },
+            ];
+
+            document.getElementById('traces-list').innerHTML = traces.map(t => `
+                <div class="trace-item">
+                    <div class="trace-header">
+                        <span><b>${t.id}</b> - ${t.name}</span>
+                        <span class="trace-type">${t.type}</span>
+                    </div>
+                    <div class="trace-duration">Duration: ${t.duration} | Spans: ${t.spans}</div>
+                </div>
+            `).join('');
+        }
+
+        // Tools
+        function updateTools() {
+            const tools = [
+                { id: 'google_drive', name: 'Google Drive', icon: '📁', status: 'active', calls: 234 },
+                { id: 'slack', name: 'Slack', icon: '💬', status: 'active', calls: 156 },
+                { id: 'github', name: 'GitHub', icon: '🐙', status: 'active', calls: 89 },
+                { id: 'email', name: 'Email', icon: '📧', status: 'inactive', calls: 0 },
+                { id: 'database', name: 'Database', icon: '🗄️', status: 'active', calls: 445 },
+                { id: 'web_search', name: 'Web Search', icon: '🔍', status: 'active', calls: 312 },
+            ];
+
+            document.getElementById('tools-grid').innerHTML = tools.map(t => `
+                <div class="card tool-card" style="position:relative;">
+                    <div class="tool-status ${t.status}"></div>
+                    <div class="tool-icon">${t.icon}</div>
+                    <div>
+                        <div style="font-weight:600;">${t.name}</div>
+                        <div style="font-size:0.85rem;color:var(--text-secondary);">${t.calls} calls</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // DLP Rules
+        function updateDLPRules() {
+            const rules = [
+                { id: 'DLP-001', name: 'Credit Card Detection', status: 'active', violations: 8 },
+                { id: 'DLP-002', name: 'SSN Detection', status: 'active', violations: 3 },
+                { id: 'DLP-003', name: 'API Key Detection', status: 'active', violations: 12 },
+                { id: 'DLP-004', name: 'Email PII', status: 'active', violations: 0 },
+            ];
+
+            document.getElementById('dlp-rules').innerHTML = rules.map(r => `
+                <div class="trace-item" style="border-left-color: ${r.violations > 0 ? 'var(--danger)' : 'var(--success)'}">
+                    <div class="trace-header">
+                        <span><b>${r.id}</b> - ${r.name}</span>
+                        <span class="trace-type">${r.status}</span>
+                    </div>
+                    <div class="trace-duration">Violations: ${r.violations}</div>
+                </div>
+            `).join('');
+        }
+
+        // Export Data
+        function exportData() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                stats: { queries: 1284, cacheRate: 0.67, costSaved: 42.50, avgLatency: 287 },
+                models: { 'gpt-4o-mini': 45, 'claude-3.5': 30, 'gemini': 20 }
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mcp_dashboard_export.json';
+            a.click();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            updateActivityFeed();
+            updateTraces();
+            updateTools();
+            updateDLPRules();
+
+            // Auto-update
+            setInterval(updateActivityFeed, 10000);
+        });
+    </script>
+</body>
+
+</html>
