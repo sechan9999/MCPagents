@@ -1,0 +1,25 @@
+# Core LangChain packages
+langchain>=0.1.0
+langchain-openai>=0.0.5
+langchain-anthropic>=0.1.1
+langchain-google-genai>=0.0.6
+langchain-core>=0.1.0
+
+# Data validation
+pydantic>=2.5.0
+
+# Token counting
+tiktoken>=0.5.2
+
+# Caching (optional - can use in-memory dict)
+redis>=5.0.1
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Async support
+asyncio-throttle>=1.0.2
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.23.0
