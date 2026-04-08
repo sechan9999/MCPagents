@@ -83,3 +83,21 @@ python main.py
 └─────────────────────────────────────────────────────┘
 ```
 
+
+### The Big Picture: What is this?
+Imagine you run a company that uses multiple AI assistants (like ChatGPT, Claude, or Gemini) to help your employees search for files, write emails, or analyze data.
+
+This website is a "Control Center" (an enterprise dashboard) for managing all those AI assistants. It ensures they are working efficiently, not wasting company money, and not leaking sensitive information.
+
+### Key Features Explained Simply
+If you look at the menu on the left side of the dashboard, you'll see a list of tools. Here is what each one does:
+
+🔀 Intelligent Router (The Dispatcher) Think of this as a smart dispatcher. If an employee asks the AI a very simple question (e.g., "What time is it?"), the Router sends it to a fast, cheap AI. If the question is incredibly complex, it routes it to a highly capable, more expensive AI. Goal: Saves money while getting the job done.
+💾 Semantic Cache (The Memory Bank) This acts like a company library. If someone asks a question the AI has already answered yesterday, the Cache instantly pulls up the saved answer instead of forcing the AI to "think" about it all over again. Goal: Speeds up responses and reduces costs.
+🛠 Tool Manager (The AI's Hands) An AI can normally only "talk." The Tool Manager gives the AI "hands" by connecting it to other software—like allowing the AI to actually push code to GitHub, send a message in Slack, or open a Google Doc.
+🛡 DLP Policy (The Security Guard) DLP stands for Data Loss Prevention. It's an automatic security guard that reads everything before it's sent to the AI. If an employee accidentally pastes a Credit Card number or a private company password into the chat, the DLP policy catches it and blocks it. Goal: Keeps company secrets safe.
+📊 Cost Monitor & Observability (The Accountants) AIs cost a tiny fraction of a penny every time they think. If you have 1,000 employees using it all day, that adds up! These sections provide beautiful charts (pie charts and bar graphs) showing exactly how much money is being spent, which AI models are being used the most, and how many errors are happening.
+
+### Summary
+In short, the MCP Agents interface is a sleek management tool designed for businesses. It takes the wild, unpredictable nature of AI and wraps it in a safe, cost-controlled, and easily monitorable package so a company can use AI at scale without worrying about security or runaway bills.
+
