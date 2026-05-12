@@ -2,774 +2,1224 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCP Agents - Enterprise Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #12121a;
-            --bg-card: #1a1a24;
-            --accent: #6366f1;
-            --accent-glow: rgba(99, 102, 241, 0.3);
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --border: #2d2d3a;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCP Agents - Enterprise AI Control Center</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --page: #f5f7fb;
+      --surface: #ffffff;
+      --surface-2: #eef2f7;
+      --ink: #14213d;
+      --muted: #617085;
+      --line: #d8e0ea;
+      --nav: #101828;
+      --nav-soft: #1d2939;
+      --accent: #0f766e;
+      --accent-2: #2563eb;
+      --success: #168a4a;
+      --warning: #b45309;
+      --danger: #dc2626;
+      --violet: #6d28d9;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    }
 
-        .light-mode {
-            --bg-primary: #f8fafc;
-            --bg-secondary: #e2e8f0;
-            --bg-card: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border: #e2e8f0;
-        }
+    * {
+      box-sizing: border-box;
+    }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background: var(--page);
+      color: var(--ink);
+    }
 
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-        }
+    button,
+    input,
+    select {
+      font: inherit;
+    }
 
-        .container {
-            display: flex;
-            min-height: 100vh;
-        }
+    .app-shell {
+      display: grid;
+      grid-template-columns: 268px minmax(0, 1fr);
+      min-height: 100vh;
+    }
 
-        /* Sidebar */
-        .sidebar {
-            width: 260px;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border);
-            padding: 20px;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-        }
+    .sidebar {
+      background: var(--nav);
+      color: #f8fafc;
+      padding: 24px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent);
-            margin-bottom: 30px;
-        }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 8px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 18px;
+    }
 
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            margin: 4px 0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(15, 118, 110, 0.95)),
+        #0f766e;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
 
-        .nav-item:hover,
-        .nav-item.active {
-            background: var(--accent);
-            color: white;
-        }
+    .brand-title {
+      font-size: 1rem;
+      font-weight: 800;
+      line-height: 1.15;
+    }
 
-        /* Main Content */
-        .main {
-            margin-left: 260px;
-            flex: 1;
-            padding: 30px;
-        }
+    .brand-subtitle {
+      font-size: 0.74rem;
+      color: #98a2b3;
+      margin-top: 3px;
+    }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
+    .nav-section {
+      color: #98a2b3;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin: 22px 8px 8px;
+    }
 
-        .header h1 {
-            font-size: 1.8rem;
-        }
+    .nav-button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #d0d5dd;
+      background: transparent;
+      border: 0;
+      border-radius: 8px;
+      padding: 11px 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.18s ease, color 0.18s ease;
+    }
 
-        .theme-btn {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+    .nav-button:hover,
+    .nav-button.active {
+      background: var(--nav-soft);
+      color: #ffffff;
+    }
 
-        /* Cards */
-        .grid {
-            display: grid;
-            gap: 20px;
-        }
+    .nav-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.12);
+    }
 
-        .grid-4 {
-            grid-template-columns: repeat(4, 1fr);
-        }
+    .sidebar-card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 14px;
+      margin-top: 24px;
+    }
 
-        .grid-3 {
-            grid-template-columns: repeat(3, 1fr);
-        }
+    .sidebar-card strong {
+      display: block;
+      font-size: 0.86rem;
+      margin-bottom: 8px;
+    }
 
-        .grid-2 {
-            grid-template-columns: repeat(2, 1fr);
-        }
+    .sidebar-card p {
+      color: #cbd5e1;
+      font-size: 0.78rem;
+      line-height: 1.45;
+      margin: 0;
+    }
 
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-        }
+    .main {
+      min-width: 0;
+      padding: 28px;
+    }
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
 
-        .card-title {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-        }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
 
-        .stat-card .value {
-            font-size: 2.2rem;
-            font-weight: 700;
-        }
+    h1 {
+      margin: 0;
+      font-size: clamp(1.65rem, 2.5vw, 2.45rem);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
 
-        .stat-card .change {
-            font-size: 0.85rem;
-            margin-top: 8px;
-        }
+    .topbar p {
+      max-width: 780px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.98rem;
+    }
 
-        .stat-card .change.up {
-            color: var(--success);
-        }
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
 
-        .stat-card .change.down {
-            color: var(--danger);
-        }
+    .btn {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 700;
+      min-height: 42px;
+    }
 
-        /* Charts */
-        .chart-container {
-            position: relative;
-            height: 250px;
-        }
+    .btn.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+    }
 
-        /* Activity Feed */
-        .feed-item {
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-        }
+    .btn:hover {
+      filter: brightness(0.98);
+    }
 
-        .feed-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
+    .status-strip {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
 
-        .feed-icon.llm {
-            background: rgba(99, 102, 241, 0.2);
-        }
+    .status-item {
+      background: var(--surface);
+      padding: 14px 16px;
+      min-width: 0;
+    }
 
-        .feed-icon.tool {
-            background: rgba(16, 185, 129, 0.2);
-        }
+    .label {
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
 
-        .feed-icon.cache {
-            background: rgba(245, 158, 11, 0.2);
-        }
+    .status-value {
+      margin-top: 6px;
+      font-size: 0.96rem;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
 
-        .feed-icon.dlp {
-            background: rgba(239, 68, 68, 0.2);
-        }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      background: #e6f6f2;
+      color: #0f766e;
+      white-space: nowrap;
+    }
 
-        .feed-time {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
+    .pill.warning {
+      background: #fff4df;
+      color: #92400e;
+    }
 
-        /* Tools Grid */
-        .tool-card {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 16px;
-        }
+    .pill.danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
 
-        .tool-icon {
-            font-size: 2rem;
-        }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
 
-        .tool-status {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            position: absolute;
-            top: 12px;
-            right: 12px;
-        }
+    .page {
+      display: none;
+    }
 
-        .tool-status.active {
-            background: var(--success);
-            box-shadow: 0 0 8px var(--success);
-        }
+    .page.active {
+      display: block;
+    }
 
-        .tool-status.inactive {
-            background: var(--text-secondary);
-        }
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
 
-        /* Trace View */
-        .trace-item {
-            padding: 12px;
-            margin: 8px 0;
-            background: var(--bg-secondary);
-            border-radius: 8px;
-            border-left: 3px solid var(--accent);
-        }
+    .grid-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 
-        .trace-header {
-            display: flex;
-            justify-content: space-between;
-        }
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 
-        .trace-type {
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 4px;
-            background: var(--accent);
-            color: white;
-        }
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 
-        .trace-duration {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      min-width: 0;
+    }
 
-        /* Buttons */
-        .btn {
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            border: none;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
+    .metric-card {
+      min-height: 152px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
 
-        .btn-primary {
-            background: var(--accent);
-            color: white;
-        }
+    .metric-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
 
-        .btn-primary:hover {
-            filter: brightness(1.1);
-        }
+    .metric-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 0.78rem;
+      font-weight: 900;
+      color: #ffffff;
+      background: var(--accent-2);
+    }
 
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .grid-4 {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
+    .metric-icon.security {
+      background: var(--danger);
+    }
 
-        @media (max-width: 768px) {
-            .sidebar {
-                display: none;
-            }
+    .metric-icon.cost {
+      background: var(--success);
+    }
 
-            .main {
-                margin-left: 0;
-            }
+    .metric-icon.audit {
+      background: var(--violet);
+    }
 
-            .grid-4,
-            .grid-3,
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-        }
+    .metric-icon.cache {
+      background: var(--warning);
+    }
 
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
+    .metric-value {
+      margin-top: 14px;
+      font-size: clamp(1.55rem, 3vw, 2.35rem);
+      font-weight: 850;
+      letter-spacing: 0;
+    }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    .metric-note {
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin-top: 8px;
+      line-height: 1.4;
+    }
 
-        .card {
-            animation: fadeIn 0.3s ease-out;
-        }
+    .trend {
+      color: var(--success);
+      font-size: 0.82rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
 
-        @keyframes pulse {
+    .trend.danger {
+      color: var(--danger);
+    }
 
-            0%,
-            100% {
-                opacity: 1;
-            }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin: 22px 0 12px;
+    }
 
-            50% {
-                opacity: 0.5;
-            }
-        }
+    .section-header h2 {
+      margin: 0;
+      font-size: 1.02rem;
+    }
 
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-    </style>
+    .section-header span {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .chart-box {
+      height: 286px;
+      position: relative;
+    }
+
+    .traffic-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .traffic-table th {
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-align: left;
+      padding: 0 10px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .traffic-table td {
+      padding: 13px 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+    }
+
+    .traffic-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .model-badge {
+      display: inline-flex;
+      align-items: center;
+      min-width: 96px;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 8px;
+      color: var(--ink);
+      background: var(--surface-2);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .amount {
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+    }
+
+    .progress {
+      height: 9px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--accent);
+    }
+
+    .policy-list,
+    .dept-list,
+    .event-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .policy-row,
+    .dept-row,
+    .event-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+    }
+
+    .policy-row strong,
+    .dept-row strong,
+    .event-row strong {
+      display: block;
+      font-size: 0.92rem;
+    }
+
+    .subtext {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .gate-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+      gap: 16px;
+    }
+
+    .prompt-card textarea {
+      width: 100%;
+      min-height: 150px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--ink);
+      background: #fbfdff;
+      line-height: 1.45;
+    }
+
+    .decision {
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      padding: 14px;
+      background: #fbfdff;
+    }
+
+    .decision.blocked {
+      border-color: #fecaca;
+      background: #fff6f6;
+    }
+
+    .decision.allowed {
+      border-color: #bbf7d0;
+      background: #f5fff8;
+    }
+
+    .route-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .route-step {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfdff;
+    }
+
+    .route-step header {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      margin-top: 20px;
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 1180px) {
+      .grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .status-strip,
+      .gate-panel {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .main {
+        padding: 20px;
+      }
+
+      .topbar {
+        flex-direction: column;
+      }
+
+      .actions {
+        justify-content: flex-start;
+      }
+
+      .grid-4,
+      .grid-3,
+      .grid-2,
+      .status-strip,
+      .gate-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .traffic-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+  </style>
 </head>
 
 <body>
-    <div class="container">
-        <!-- Sidebar -->
-        <nav class="sidebar">
-            <div class="logo">🤖 MCP Agents</div>
-            <div class="nav-item active" onclick="showPage('dashboard')">📊 Dashboard</div>
-            <div class="nav-item" onclick="showPage('router')">🎯 Intelligent Router</div>
-            <div class="nav-item" onclick="showPage('cache')">💾 Semantic Cache</div>
-            <div class="nav-item" onclick="showPage('observability')">🔍 Observability</div>
-            <div class="nav-item" onclick="showPage('tools')">🔧 Tool Manager</div>
-            <div class="nav-item" onclick="showPage('dlp')">🛡️ DLP Policy</div>
-            <div class="nav-item" onclick="showPage('costs')">💰 Cost Monitor</div>
-        </nav>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">M</div>
+        <div>
+          <div class="brand-title">MCP Agents</div>
+          <div class="brand-subtitle">Enterprise AI Gateway</div>
+        </div>
+      </div>
 
-        <!-- Main Content -->
-        <main class="main">
-            <div class="header">
-                <h1 id="page-title">Enterprise Dashboard</h1>
-                <div style="display:flex;gap:12px;">
-                    <button class="btn btn-primary" onclick="exportData()">📥 Export</button>
-                    <button class="theme-btn" onclick="toggleTheme()">
-                        <span id="theme-icon">🌙</span>
-                        <span id="theme-text">Dark Mode</span>
-                    </button>
-                </div>
+      <div class="nav-section">Control Center</div>
+      <button class="nav-button active" data-page="overview">
+        <span class="nav-icon">OV</span> Executive Overview
+      </button>
+      <button class="nav-button" data-page="guard">
+        <span class="nav-icon">DG</span> Data Guard
+      </button>
+      <button class="nav-button" data-page="cost">
+        <span class="nav-icon">CM</span> Cost Monitor
+      </button>
+      <button class="nav-button" data-page="trace">
+        <span class="nav-icon">TR</span> Trace Explorer
+      </button>
+
+      <div class="nav-section">System</div>
+      <button class="nav-button" data-page="routing">
+        <span class="nav-icon">RT</span> Routing Policy
+      </button>
+      <button class="nav-button" data-page="connectors">
+        <span class="nav-icon">CX</span> Connectors
+      </button>
+
+      <div class="sidebar-card">
+        <strong>Risk posture</strong>
+        <p>Live traffic is routed through DLP, policy checks, semantic cache, model selection, and full audit logging before a response reaches employees.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <div class="eyebrow">Secure Enterprise AI Operations</div>
+          <h1>One control plane for every prompt, model, tool call, and dollar.</h1>
+          <p>MCP Agents gives IT and finance teams a governed AI gateway: sensitive data is blocked before it leaves the company, model spend is optimized in real time, and every request is traceable.</p>
+        </div>
+        <div class="actions">
+          <button class="btn" id="simulateSpike">Simulate Spike</button>
+          <button class="btn primary" id="exportReport">Export Audit Report</button>
+        </div>
+      </div>
+
+      <section class="status-strip" aria-label="System status">
+        <div class="status-item">
+          <div class="label">Gateway Status</div>
+          <div class="status-value"><span class="pill"><span class="dot"></span> Enforcing policy</span></div>
+        </div>
+        <div class="status-item">
+          <div class="label">AI Apps Observed</div>
+          <div class="status-value">ChatGPT, Claude, Gemini, internal MCP tools</div>
+        </div>
+        <div class="status-item">
+          <div class="label">Deployment</div>
+          <div class="status-value">SOC2-ready audit mode</div>
+        </div>
+        <div class="status-item">
+          <div class="label">Updated</div>
+          <div class="status-value" id="lastUpdated">Live</div>
+        </div>
+      </section>
+
+      <section id="page-overview" class="page active">
+        <div class="grid grid-4">
+          <article class="card metric-card">
+            <div class="metric-top">
+              <div class="label">Security Blocks Today</div>
+              <div class="metric-icon security">DG</div>
             </div>
-
-            <!-- Dashboard Page -->
-            <div id="page-dashboard" class="page">
-                <div class="grid grid-4" style="margin-bottom:20px;">
-                    <div class="card stat-card">
-                        <div class="card-title">Total Queries</div>
-                        <div class="value" id="total-queries">1,284</div>
-                        <div class="change up">↑ 12% from yesterday</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="value" style="color:var(--success);" id="cache-rate">67%</div>
-                        <div class="card-title">Cache Hit Rate</div>
-                        <div class="change up">↑ 8% saved</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="value" id="cost-saved">$42.50</div>
-                        <div class="card-title">Cost Saved Today</div>
-                        <div class="change up">↑ via smart routing</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="value" id="avg-latency">287ms</div>
-                        <div class="card-title">Avg Latency</div>
-                        <div class="change down">↓ 15% faster</div>
-                    </div>
-                </div>
-
-                <div class="grid grid-2">
-                    <div class="card">
-                        <div class="card-header"><span class="card-title">Model Distribution</span></div>
-                        <div class="chart-container"><canvas id="modelChart"></canvas></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header"><span class="card-title">Query Complexity</span></div>
-                        <div class="chart-container"><canvas id="complexityChart"></canvas></div>
-                    </div>
-                </div>
-
-                <div class="grid grid-2" style="margin-top:20px;">
-                    <div class="card">
-                        <div class="card-header"><span class="card-title">Cost Over Time</span></div>
-                        <div class="chart-container"><canvas id="costChart"></canvas></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header"><span class="card-title">Live Activity</span></div>
-                        <div id="activity-feed"></div>
-                    </div>
-                </div>
+            <div>
+              <div class="metric-value" id="securityBlocks">47</div>
+              <div class="metric-note">PII, API keys, payroll data, and customer records stopped before model egress.</div>
             </div>
+            <div class="trend danger">+18 high-risk prompts</div>
+          </article>
 
-            <!-- Router Page -->
-            <div id="page-router" class="page" style="display:none;">
-                <div class="grid grid-3" style="margin-bottom:20px;">
-                    <div class="card stat-card">
-                        <div class="card-title">Routing Decisions</div>
-                        <div class="value">856</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="card-title">Avg Decision Time</div>
-                        <div class="value">12ms</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="card-title">Cost Optimization</div>
-                        <div class="value" style="color:var(--success);">38%</div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-title">LLM-as-a-Judge Complexity Analysis</div>
-                    <div class="chart-container"><canvas id="routerChart"></canvas></div>
-                </div>
+          <article class="card metric-card">
+            <div class="metric-top">
+              <div class="label">Monthly Savings</div>
+              <div class="metric-icon cost">CM</div>
             </div>
-
-            <!-- Cache Page -->
-            <div id="page-cache" class="page" style="display:none;">
-                <div class="grid grid-4" style="margin-bottom:20px;">
-                    <div class="card stat-card">
-                        <div class="card-title">Cache Size</div>
-                        <div class="value">2,456</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="card-title">Exact Hits</div>
-                        <div class="value">423</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="card-title">Semantic Hits</div>
-                        <div class="value">312</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="card-title">Miss Rate</div>
-                        <div class="value">33%</div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-title">Semantic Cache Performance</div>
-                    <div class="chart-container"><canvas id="cacheChart"></canvas></div>
-                </div>
+            <div>
+              <div class="metric-value" id="monthlySavings">$18.4k</div>
+              <div class="metric-note">Saved through semantic cache hits, model routing, and duplicate-request suppression.</div>
             </div>
+            <div class="trend">60% below unmanaged baseline</div>
+          </article>
 
-            <!-- Observability Page -->
-            <div id="page-observability" class="page" style="display:none;">
-                <div class="grid grid-3" style="margin-bottom:20px;">
-                    <div class="card stat-card">
-                        <div class="card-title">Total Traces</div>
-                        <div class="value">1,892</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="card-title">Total Spans</div>
-                        <div class="value">8,456</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="card-title">Error Rate</div>
-                        <div class="value" style="color:var(--danger);">0.3%</div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-title">Recent Traces</div>
-                    <div id="traces-list"></div>
-                </div>
+          <article class="card metric-card">
+            <div class="metric-top">
+              <div class="label">Trace Coverage</div>
+              <div class="metric-icon audit">TR</div>
             </div>
-
-            <!-- Tools Page -->
-            <div id="page-tools" class="page" style="display:none;">
-                <div class="grid grid-3" id="tools-grid"></div>
+            <div>
+              <div class="metric-value">100%</div>
+              <div class="metric-note">Prompt, response, model, user, department, token cost, and policy outcome captured.</div>
             </div>
+            <div class="trend">12,884 spans indexed</div>
+          </article>
 
-            <!-- DLP Page -->
-            <div id="page-dlp" class="page" style="display:none;">
-                <div class="grid grid-4" style="margin-bottom:20px;">
-                    <div class="card stat-card">
-                        <div class="card-title">Total Scans</div>
-                        <div class="value">4,523</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="card-title">Violations</div>
-                        <div class="value" style="color:var(--danger);">23</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="card-title">Blocked</div>
-                        <div class="value">18</div>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="card-title">Masked</div>
-                        <div class="value">5</div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-title">DLP Rules Status</div>
-                    <div id="dlp-rules"></div>
-                </div>
+          <article class="card metric-card">
+            <div class="metric-top">
+              <div class="label">Cache Hit Rate</div>
+              <div class="metric-icon cache">SC</div>
             </div>
-
-            <!-- Costs Page -->
-            <div id="page-costs" class="page" style="display:none;">
-                <div class="grid grid-2">
-                    <div class="card">
-                        <div class="card-title">Cost by Model</div>
-                        <div class="chart-container"><canvas id="costByModelChart"></canvas></div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Daily Cost Trend</div>
-                        <div class="chart-container"><canvas id="dailyCostChart"></canvas></div>
-                    </div>
-                </div>
+            <div>
+              <div class="metric-value" id="cacheRate">71%</div>
+              <div class="metric-note">Repeated research, HR, and engineering prompts answered without extra model spend.</div>
             </div>
-        </main>
-    </div>
+            <div class="trend">287 ms average latency</div>
+          </article>
+        </div>
 
-    <script>
-        let isLightMode = false;
-        let charts = {};
+        <div class="section-header">
+          <h2>Live AI Traffic</h2>
+          <span>Policy decisions across departments and models</span>
+        </div>
 
-        // Theme Toggle
-        function toggleTheme() {
-            isLightMode = !isLightMode;
-            document.body.classList.toggle('light-mode');
-            document.getElementById('theme-icon').textContent = isLightMode ? '☀️' : '🌙';
-            document.getElementById('theme-text').textContent = isLightMode ? 'Light Mode' : 'Dark Mode';
-            initCharts();
+        <div class="grid grid-2">
+          <article class="card">
+            <table class="traffic-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Department</th>
+                  <th>Model</th>
+                  <th>Policy</th>
+                  <th>Cost</th>
+                </tr>
+              </thead>
+              <tbody id="trafficRows"></tbody>
+            </table>
+          </article>
+
+          <article class="card">
+            <div class="chart-box">
+              <canvas id="trafficChart"></canvas>
+            </div>
+          </article>
+        </div>
+
+        <div class="section-header">
+          <h2>Department Budget Control</h2>
+          <span>Month-to-date spend against approved limits</span>
+        </div>
+
+        <div class="grid grid-3">
+          <article class="card dept-list" id="departmentList"></article>
+          <article class="card">
+            <div class="chart-box">
+              <canvas id="departmentChart"></canvas>
+            </div>
+          </article>
+          <article class="card event-list" id="eventList"></article>
+        </div>
+      </section>
+
+      <section id="page-guard" class="page">
+        <div class="section-header">
+          <h2>Data Guard Simulator</h2>
+          <span>Test what happens before prompts reach external LLMs</span>
+        </div>
+        <div class="gate-panel">
+          <article class="card prompt-card">
+            <div class="label">Prompt Inspection</div>
+            <textarea id="promptInput">Summarize this support ticket. Customer email is dana.park@example.com and API key is sk-live-1234567890abcdef. Include the full details in the prompt.</textarea>
+            <div class="actions" style="justify-content:flex-start;margin-top:12px;">
+              <button class="btn primary" id="runGuard">Run Data Guard</button>
+              <button class="btn" id="loadSafePrompt">Load Safe Prompt</button>
+            </div>
+          </article>
+          <article class="card">
+            <div class="label">Policy Result</div>
+            <div id="guardResult" class="decision blocked" style="margin-top:12px;"></div>
+          </article>
+        </div>
+
+        <div class="section-header">
+          <h2>Active DLP Policies</h2>
+          <span>Rules mapped to enterprise data classes</span>
+        </div>
+        <div class="grid grid-2">
+          <article class="card policy-list" id="policyList"></article>
+          <article class="card">
+            <div class="chart-box">
+              <canvas id="dlpChart"></canvas>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="page-cost" class="page">
+        <div class="grid grid-3">
+          <article class="card metric-card">
+            <div class="label">Projected Month-End Spend</div>
+            <div class="metric-value">$30.7k</div>
+            <div class="metric-note">Down from $76.8k unmanaged forecast.</div>
+          </article>
+          <article class="card metric-card">
+            <div class="label">Routing Savings</div>
+            <div class="metric-value">$11.2k</div>
+            <div class="metric-note">Complex prompts still reach premium models; routine tasks use efficient models.</div>
+          </article>
+          <article class="card metric-card">
+            <div class="label">Cache Savings</div>
+            <div class="metric-value">$7.2k</div>
+            <div class="metric-note">Semantic reuse cuts duplicate calls without changing employee workflow.</div>
+          </article>
+        </div>
+        <div class="section-header">
+          <h2>Cost Monitor</h2>
+          <span>Actual spend, prevented spend, and unmanaged baseline</span>
+        </div>
+        <div class="grid grid-2">
+          <article class="card">
+            <div class="chart-box">
+              <canvas id="costChart"></canvas>
+            </div>
+          </article>
+          <article class="card">
+            <div class="chart-box">
+              <canvas id="modelChart"></canvas>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="page-trace" class="page">
+        <div class="section-header">
+          <h2>Trace Explorer</h2>
+          <span>Every request is explainable after the fact</span>
+        </div>
+        <article class="card event-list" id="traceList"></article>
+      </section>
+
+      <section id="page-routing" class="page">
+        <div class="section-header">
+          <h2>Routing Policy</h2>
+          <span>Quality, cost, latency, and data sensitivity decide the model</span>
+        </div>
+        <div class="grid grid-2">
+          <article class="card route-stack" id="routeList"></article>
+          <article class="card">
+            <div class="chart-box">
+              <canvas id="routingChart"></canvas>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="page-connectors" class="page">
+        <div class="section-header">
+          <h2>Connector Governance</h2>
+          <span>Tool access is scoped, logged, and revocable</span>
+        </div>
+        <div class="grid grid-3" id="connectorList"></div>
+      </section>
+
+      <div class="footer-note">Demo data is static and designed for product validation conversations. Connect live gateway logs to turn this into an operational console.</div>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      securityBlocks: 47,
+      monthlySavings: 18400,
+      cacheRate: 71,
+      traffic: [
+        { user: "mina.kim", dept: "Engineering", model: "GPT-4o mini", policy: "Allowed", cost: 0.018 },
+        { user: "jun.lee", dept: "Finance", model: "Claude Sonnet", policy: "Masked", cost: 0.042 },
+        { user: "sarah.cho", dept: "HR", model: "Gemini Flash", policy: "Cache hit", cost: 0.000 },
+        { user: "daniel.park", dept: "Sales", model: "Blocked", policy: "PII blocked", cost: 0.000 },
+        { user: "alex.han", dept: "Marketing", model: "GPT-4o", policy: "Approved", cost: 0.087 }
+      ]
+    };
+
+    const departments = [
+      { name: "Engineering", spend: 12840, budget: 18000 },
+      { name: "Marketing", spend: 7420, budget: 12000 },
+      { name: "Sales", spend: 5360, budget: 9000 },
+      { name: "HR", spend: 2140, budget: 5000 }
+    ];
+
+    const policies = [
+      { name: "PII and customer record detection", status: "Enforced", hits: 19 },
+      { name: "API key and credential detection", status: "Enforced", hits: 11 },
+      { name: "Finance and payroll data masking", status: "Review", hits: 7 },
+      { name: "Source code exfiltration guard", status: "Enforced", hits: 10 }
+    ];
+
+    const events = [
+      { title: "API key blocked", detail: "Engineering prompt stopped before external model call.", tone: "danger" },
+      { title: "Semantic cache hit", detail: "HR onboarding summary reused with 94% match.", tone: "success" },
+      { title: "Premium model approved", detail: "Legal analysis routed to Claude Sonnet with audit note.", tone: "warning" },
+      { title: "Budget threshold warning", detail: "Marketing reached 62% of monthly AI budget.", tone: "warning" }
+    ];
+
+    const traces = [
+      { id: "TRC-8842", title: "Prompt received", detail: "User, department, application, and sensitivity context attached." },
+      { id: "TRC-8843", title: "DLP scan completed", detail: "Email and token-like credential detected; masking policy applied." },
+      { id: "TRC-8844", title: "Route selected", detail: "Routine summarization sent to GPT-4o mini after policy approval." },
+      { id: "TRC-8845", title: "Cost logged", detail: "$0.018 actual spend recorded against Engineering monthly budget." }
+    ];
+
+    const routes = [
+      { title: "Low-risk routine work", model: "GPT-4o mini", detail: "Default path for summaries, rewrites, and small coding tasks." },
+      { title: "High-context reasoning", model: "Claude Sonnet", detail: "Approved for legal, strategy, architecture, and complex analysis." },
+      { title: "Fast repeated requests", model: "Semantic cache", detail: "Answers reused when similarity and freshness thresholds pass." },
+      { title: "Sensitive data", model: "Blocked or masked", detail: "PII, credentials, and restricted data never leave the gateway raw." }
+    ];
+
+    const connectors = [
+      { name: "Google Drive", scope: "Read selected folders", status: "Active", calls: 1240 },
+      { name: "GitHub", scope: "Repo read, PR comment", status: "Active", calls: 718 },
+      { name: "Slack", scope: "Channel summaries", status: "Active", calls: 532 },
+      { name: "Postgres", scope: "Read-only analytics", status: "Restricted", calls: 184 },
+      { name: "Email", scope: "Draft only", status: "Paused", calls: 0 },
+      { name: "Web Search", scope: "Public web", status: "Active", calls: 908 }
+    ];
+
+    const charts = {};
+
+    function formatMoney(value) {
+      if (value >= 1000) return "$" + (value / 1000).toFixed(1) + "k";
+      return "$" + value.toFixed(2);
+    }
+
+    function renderTraffic() {
+      document.getElementById("trafficRows").innerHTML = state.traffic.map((item) => {
+        const policyClass = item.policy.includes("blocked") || item.model === "Blocked" ? "danger" : item.policy.includes("Masked") ? "warning" : "";
+        return `
+          <tr>
+            <td>${item.user}</td>
+            <td>${item.dept}</td>
+            <td><span class="model-badge">${item.model}</span></td>
+            <td><span class="pill ${policyClass}"><span class="dot"></span>${item.policy}</span></td>
+            <td class="amount">${formatMoney(item.cost)}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderDepartments() {
+      document.getElementById("departmentList").innerHTML = departments.map((dept) => {
+        const pct = Math.round((dept.spend / dept.budget) * 100);
+        return `
+          <div class="dept-row">
+            <div>
+              <strong>${dept.name}</strong>
+              <div class="subtext">${formatMoney(dept.spend)} of ${formatMoney(dept.budget)} used</div>
+              <div class="progress" style="margin-top:9px;"><div class="bar" style="width:${pct}%;"></div></div>
+            </div>
+            <span class="amount">${pct}%</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderEvents() {
+      document.getElementById("eventList").innerHTML = events.map((event) => `
+        <div class="event-row">
+          <div>
+            <strong>${event.title}</strong>
+            <div class="subtext">${event.detail}</div>
+          </div>
+          <span class="pill ${event.tone === "danger" ? "danger" : event.tone === "warning" ? "warning" : ""}">
+            <span class="dot"></span>${event.tone}
+          </span>
+        </div>
+      `).join("");
+    }
+
+    function renderPolicies() {
+      document.getElementById("policyList").innerHTML = policies.map((policy) => `
+        <div class="policy-row">
+          <div>
+            <strong>${policy.name}</strong>
+            <div class="subtext">${policy.hits} matches in the last 24 hours</div>
+          </div>
+          <span class="pill ${policy.status === "Review" ? "warning" : ""}"><span class="dot"></span>${policy.status}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderTraceList() {
+      document.getElementById("traceList").innerHTML = traces.map((trace) => `
+        <div class="event-row">
+          <div>
+            <strong>${trace.id} - ${trace.title}</strong>
+            <div class="subtext">${trace.detail}</div>
+          </div>
+          <span class="model-badge">logged</span>
+        </div>
+      `).join("");
+    }
+
+    function renderRoutes() {
+      document.getElementById("routeList").innerHTML = routes.map((route) => `
+        <div class="route-step">
+          <header>
+            <strong>${route.title}</strong>
+            <span class="model-badge">${route.model}</span>
+          </header>
+          <div class="subtext">${route.detail}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderConnectors() {
+      document.getElementById("connectorList").innerHTML = connectors.map((connector) => `
+        <article class="card metric-card">
+          <div class="metric-top">
+            <div>
+              <div class="label">${connector.status}</div>
+              <div class="metric-value" style="font-size:1.35rem;">${connector.name}</div>
+            </div>
+            <div class="metric-icon">${connector.name.slice(0, 2).toUpperCase()}</div>
+          </div>
+          <div class="metric-note">${connector.scope}</div>
+          <div class="trend">${connector.calls.toLocaleString()} calls logged</div>
+        </article>
+      `).join("");
+    }
+
+    function runGuard() {
+      const prompt = document.getElementById("promptInput").value;
+      const findings = [];
+      if (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(prompt)) findings.push("Email address");
+      if (/(sk|pk|api)[-_][a-z0-9]{10,}/i.test(prompt)) findings.push("Credential-like token");
+      if (/\b\d{3}-\d{2}-\d{4}\b/.test(prompt)) findings.push("SSN pattern");
+      if (/\b(?:\d[ -]*?){13,16}\b/.test(prompt)) findings.push("Payment card pattern");
+
+      const result = document.getElementById("guardResult");
+      if (findings.length) {
+        result.className = "decision blocked";
+        result.innerHTML = `
+          <span class="pill danger"><span class="dot"></span>Blocked before egress</span>
+          <h3 style="margin:14px 0 8px;">${findings.length} sensitive data class detected</h3>
+          <div class="subtext">${findings.join(", ")}. The request would be blocked or masked before any external model call.</div>
+        `;
+      } else {
+        result.className = "decision allowed";
+        result.innerHTML = `
+          <span class="pill"><span class="dot"></span>Allowed with audit log</span>
+          <h3 style="margin:14px 0 8px;">No restricted data found</h3>
+          <div class="subtext">The gateway can route this request based on cost, latency, and quality policy.</div>
+        `;
+      }
+    }
+
+    function buildCharts() {
+      const common = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: "#617085", boxWidth: 12, usePointStyle: true } }
+        },
+        scales: {
+          x: { ticks: { color: "#617085" }, grid: { color: "#eef2f7" } },
+          y: { ticks: { color: "#617085" }, grid: { color: "#eef2f7" } }
         }
+      };
 
-        // Page Navigation
-        function showPage(page) {
-            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById('page-' + page).style.display = 'block';
-            event.target.classList.add('active');
+      charts.traffic = new Chart(document.getElementById("trafficChart"), {
+        type: "line",
+        data: {
+          labels: ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00"],
+          datasets: [
+            { label: "Allowed", data: [82, 96, 104, 118, 128, 143], borderColor: "#0f766e", backgroundColor: "rgba(15,118,110,0.12)", tension: 0.35, fill: true },
+            { label: "Blocked", data: [6, 8, 11, 9, 14, 17], borderColor: "#dc2626", backgroundColor: "rgba(220,38,38,0.08)", tension: 0.35, fill: true }
+          ]
+        },
+        options: common
+      });
 
-            const titles = {
-                dashboard: 'Enterprise Dashboard',
-                router: 'Intelligent Router',
-                cache: 'Semantic Cache',
-                observability: 'Observability & Tracing',
-                tools: 'Tool Manager',
-                dlp: 'DLP Policy Engine',
-                costs: 'Cost Monitor'
-            };
-            document.getElementById('page-title').textContent = titles[page];
+      charts.department = new Chart(document.getElementById("departmentChart"), {
+        type: "doughnut",
+        data: {
+          labels: departments.map((d) => d.name),
+          datasets: [{ data: departments.map((d) => d.spend), backgroundColor: ["#2563eb", "#0f766e", "#b45309", "#6d28d9"] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: common.plugins }
+      });
+
+      charts.dlp = new Chart(document.getElementById("dlpChart"), {
+        type: "bar",
+        data: {
+          labels: ["PII", "Keys", "Payroll", "Source"],
+          datasets: [{ label: "Blocks", data: [19, 11, 7, 10], backgroundColor: ["#dc2626", "#b45309", "#6d28d9", "#2563eb"] }]
+        },
+        options: common
+      });
+
+      charts.cost = new Chart(document.getElementById("costChart"), {
+        type: "line",
+        data: {
+          labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+          datasets: [
+            { label: "Actual spend", data: [6400, 7200, 7800, 9300], borderColor: "#2563eb", tension: 0.35 },
+            { label: "Prevented spend", data: [3100, 4200, 5200, 6100], borderColor: "#168a4a", tension: 0.35 },
+            { label: "Unmanaged baseline", data: [14200, 17800, 20500, 24300], borderColor: "#dc2626", borderDash: [6, 6], tension: 0.35 }
+          ]
+        },
+        options: common
+      });
+
+      charts.model = new Chart(document.getElementById("modelChart"), {
+        type: "bar",
+        data: {
+          labels: ["GPT-4o mini", "Gemini Flash", "Claude Sonnet", "GPT-4o", "Cache"],
+          datasets: [{ label: "Requests", data: [4820, 3120, 1810, 740, 6210], backgroundColor: ["#0f766e", "#b45309", "#6d28d9", "#2563eb", "#168a4a"] }]
+        },
+        options: common
+      });
+
+      charts.routing = new Chart(document.getElementById("routingChart"), {
+        type: "radar",
+        data: {
+          labels: ["Quality", "Latency", "Cost", "Risk", "Context"],
+          datasets: [
+            { label: "Premium model", data: [95, 58, 42, 64, 92], borderColor: "#6d28d9", backgroundColor: "rgba(109,40,217,0.12)" },
+            { label: "Efficient model", data: [74, 92, 94, 72, 58], borderColor: "#0f766e", backgroundColor: "rgba(15,118,110,0.12)" }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: common.plugins,
+          scales: { r: { ticks: { color: "#617085", backdropColor: "transparent" }, grid: { color: "#d8e0ea" }, pointLabels: { color: "#14213d" } } }
         }
+      });
+    }
 
-        // Chart Colors
-        function getColors() {
-            return isLightMode
-                ? { text: '#1e293b', grid: '#e2e8f0' }
-                : { text: '#94a3b8', grid: '#2d2d3a' };
-        }
+    function switchPage(page) {
+      document.querySelectorAll(".page").forEach((el) => el.classList.remove("active"));
+      document.getElementById("page-" + page).classList.add("active");
+      document.querySelectorAll(".nav-button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.page === page);
+      });
+    }
 
-        // Initialize Charts
-        function initCharts() {
-            const colors = getColors();
-            Object.values(charts).forEach(c => c.destroy());
+    function simulateSpike() {
+      state.securityBlocks += 5;
+      state.monthlySavings += 920;
+      state.cacheRate = Math.min(86, state.cacheRate + 2);
+      state.traffic.unshift({ user: "new.user", dept: "Finance", model: "Blocked", policy: "PII blocked", cost: 0 });
+      state.traffic = state.traffic.slice(0, 5);
+      document.getElementById("securityBlocks").textContent = state.securityBlocks;
+      document.getElementById("monthlySavings").textContent = formatMoney(state.monthlySavings);
+      document.getElementById("cacheRate").textContent = state.cacheRate + "%";
+      document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString();
+      renderTraffic();
+    }
 
-            // Model Distribution
-            charts.model = new Chart(document.getElementById('modelChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['GPT-4o-mini', 'Claude 3.5', 'Gemini Flash', 'Claude Opus'],
-                    datasets: [{ data: [45, 30, 20, 5], backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444'] }]
-                },
-                options: { plugins: { legend: { labels: { color: colors.text } } } }
-            });
+    function exportReport() {
+      const payload = {
+        generated_at: new Date().toISOString(),
+        security_blocks_today: state.securityBlocks,
+        monthly_savings_usd: state.monthlySavings,
+        cache_hit_rate: state.cacheRate,
+        traffic: state.traffic,
+        departments,
+        policies
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "mcp-agents-audit-report.json";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
 
-            // Complexity
-            charts.complexity = new Chart(document.getElementById('complexityChart'), {
-                type: 'bar',
-                data: {
-                    labels: ['Trivial', 'Simple', 'Moderate', 'Complex', 'Expert'],
-                    datasets: [{ label: 'Queries', data: [120, 230, 180, 90, 35], backgroundColor: '#6366f1' }]
-                },
-                options: { scales: { y: { grid: { color: colors.grid }, ticks: { color: colors.text } }, x: { ticks: { color: colors.text } } } }
-            });
+    document.querySelectorAll(".nav-button").forEach((button) => {
+      button.addEventListener("click", () => switchPage(button.dataset.page));
+    });
 
-            // Cost Over Time
-            charts.cost = new Chart(document.getElementById('costChart'), {
-                type: 'line',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [
-                        { label: 'Actual', data: [45, 52, 38, 65, 42, 28, 35], borderColor: '#6366f1', tension: 0.4 },
-                        { label: 'Saved', data: [15, 22, 18, 25, 20, 12, 18], borderColor: '#10b981', tension: 0.4 }
-                    ]
-                },
-                options: { scales: { y: { grid: { color: colors.grid }, ticks: { color: colors.text } }, x: { ticks: { color: colors.text } } } }
-            });
+    document.getElementById("simulateSpike").addEventListener("click", simulateSpike);
+    document.getElementById("exportReport").addEventListener("click", exportReport);
+    document.getElementById("runGuard").addEventListener("click", runGuard);
+    document.getElementById("loadSafePrompt").addEventListener("click", () => {
+      document.getElementById("promptInput").value = "Summarize the Q2 product launch feedback and route routine sentiment analysis to the lowest-cost approved model.";
+      runGuard();
+    });
 
-            // Router
-            charts.router = new Chart(document.getElementById('routerChart'), {
-                type: 'radar',
-                data: {
-                    labels: ['Speed', 'Quality', 'Cost', 'Reliability', 'Complexity'],
-                    datasets: [
-                        { label: 'GPT-4o-mini', data: [9, 7, 9, 8, 6], borderColor: '#6366f1', fill: true, backgroundColor: 'rgba(99,102,241,0.2)' },
-                        { label: 'Claude 3.5', data: [7, 9, 7, 9, 9], borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16,185,129,0.2)' }
-                    ]
-                },
-                options: { scales: { r: { grid: { color: colors.grid }, pointLabels: { color: colors.text } } } }
-            });
-
-            // Cache
-            charts.cache = new Chart(document.getElementById('cacheChart'), {
-                type: 'line',
-                data: {
-                    labels: ['1h', '2h', '3h', '4h', '5h', '6h'],
-                    datasets: [
-                        { label: 'Hit Rate %', data: [62, 65, 68, 67, 71, 73], borderColor: '#10b981', tension: 0.4 },
-                        { label: 'Semantic Hits', data: [45, 48, 52, 55, 58, 62], borderColor: '#f59e0b', tension: 0.4 }
-                    ]
-                },
-                options: { scales: { y: { grid: { color: colors.grid } } } }
-            });
-
-            // Cost by Model
-            charts.costModel = new Chart(document.getElementById('costByModelChart'), {
-                type: 'pie',
-                data: {
-                    labels: ['GPT-4o', 'Claude Opus', 'GPT-4o-mini', 'Gemini'],
-                    datasets: [{ data: [120, 85, 25, 15], backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444'] }]
-                }
-            });
-
-            // Daily Cost
-            charts.daily = new Chart(document.getElementById('dailyCostChart'), {
-                type: 'bar',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-                    datasets: [{ label: 'Cost ($)', data: [45, 52, 38, 65, 42], backgroundColor: '#6366f1' }]
-                }
-            });
-        }
-
-        // Activity Feed
-        function updateActivityFeed() {
-            const activities = [
-                { type: 'llm', icon: '🤖', text: 'LLM Call: gpt-4o-mini (156 tokens)', time: '2s ago' },
-                { type: 'cache', icon: '💾', text: 'Cache HIT: Semantic match 94%', time: '5s ago' },
-                { type: 'tool', icon: '🔧', text: 'Tool Call: github.list_repos', time: '8s ago' },
-                { type: 'dlp', icon: '🛡️', text: 'DLP: Blocked credit card leak', time: '12s ago' },
-                { type: 'llm', icon: '🤖', text: 'Routing: COMPLEX → Claude 3.5', time: '15s ago' },
-            ];
-
-            document.getElementById('activity-feed').innerHTML = activities.map(a => `
-                <div class="feed-item">
-                    <div class="feed-icon ${a.type}">${a.icon}</div>
-                    <div><div>${a.text}</div><div class="feed-time">${a.time}</div></div>
-                </div>
-            `).join('');
-        }
-
-        // Traces
-        function updateTraces() {
-            const traces = [
-                { id: 'TRC-001', name: 'Query Processing', duration: '245ms', spans: 5, type: 'agent' },
-                { id: 'TRC-002', name: 'Tool Execution', duration: '120ms', spans: 3, type: 'tool_call' },
-                { id: 'TRC-003', name: 'Cache Lookup', duration: '12ms', spans: 2, type: 'cache' },
-            ];
-
-            document.getElementById('traces-list').innerHTML = traces.map(t => `
-                <div class="trace-item">
-                    <div class="trace-header">
-                        <span><b>${t.id}</b> - ${t.name}</span>
-                        <span class="trace-type">${t.type}</span>
-                    </div>
-                    <div class="trace-duration">Duration: ${t.duration} | Spans: ${t.spans}</div>
-                </div>
-            `).join('');
-        }
-
-        // Tools
-        function updateTools() {
-            const tools = [
-                { id: 'google_drive', name: 'Google Drive', icon: '📁', status: 'active', calls: 234 },
-                { id: 'slack', name: 'Slack', icon: '💬', status: 'active', calls: 156 },
-                { id: 'github', name: 'GitHub', icon: '🐙', status: 'active', calls: 89 },
-                { id: 'email', name: 'Email', icon: '📧', status: 'inactive', calls: 0 },
-                { id: 'database', name: 'Database', icon: '🗄️', status: 'active', calls: 445 },
-                { id: 'web_search', name: 'Web Search', icon: '🔍', status: 'active', calls: 312 },
-            ];
-
-            document.getElementById('tools-grid').innerHTML = tools.map(t => `
-                <div class="card tool-card" style="position:relative;">
-                    <div class="tool-status ${t.status}"></div>
-                    <div class="tool-icon">${t.icon}</div>
-                    <div>
-                        <div style="font-weight:600;">${t.name}</div>
-                        <div style="font-size:0.85rem;color:var(--text-secondary);">${t.calls} calls</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // DLP Rules
-        function updateDLPRules() {
-            const rules = [
-                { id: 'DLP-001', name: 'Credit Card Detection', status: 'active', violations: 8 },
-                { id: 'DLP-002', name: 'SSN Detection', status: 'active', violations: 3 },
-                { id: 'DLP-003', name: 'API Key Detection', status: 'active', violations: 12 },
-                { id: 'DLP-004', name: 'Email PII', status: 'active', violations: 0 },
-            ];
-
-            document.getElementById('dlp-rules').innerHTML = rules.map(r => `
-                <div class="trace-item" style="border-left-color: ${r.violations > 0 ? 'var(--danger)' : 'var(--success)'}">
-                    <div class="trace-header">
-                        <span><b>${r.id}</b> - ${r.name}</span>
-                        <span class="trace-type">${r.status}</span>
-                    </div>
-                    <div class="trace-duration">Violations: ${r.violations}</div>
-                </div>
-            `).join('');
-        }
-
-        // Export Data
-        function exportData() {
-            const data = {
-                timestamp: new Date().toISOString(),
-                stats: { queries: 1284, cacheRate: 0.67, costSaved: 42.50, avgLatency: 287 },
-                models: { 'gpt-4o-mini': 45, 'claude-3.5': 30, 'gemini': 20 }
-            };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'mcp_dashboard_export.json';
-            a.click();
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            initCharts();
-            updateActivityFeed();
-            updateTraces();
-            updateTools();
-            updateDLPRules();
-
-            // Auto-update
-            setInterval(updateActivityFeed, 10000);
-        });
-    </script>
+    renderTraffic();
+    renderDepartments();
+    renderEvents();
+    renderPolicies();
+    renderTraceList();
+    renderRoutes();
+    renderConnectors();
+    runGuard();
+    buildCharts();
+    document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString();
+  </script>
 </body>
 
 </html>
