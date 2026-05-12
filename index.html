@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MCP Agents - Enterprise AI Control Center</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     :root {
       --page: #f5f7fb;
@@ -219,6 +221,18 @@
 
     .btn:hover {
       filter: brightness(0.98);
+    }
+
+    .export-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .export-group .btn {
+      min-width: 74px;
+      padding-inline: 12px;
     }
 
     .status-strip {
@@ -663,7 +677,11 @@
         </div>
         <div class="actions">
           <button class="btn" id="simulateSpike">Simulate Spike</button>
-          <button class="btn primary" id="exportReport">Export Audit Report</button>
+          <div class="export-group" aria-label="Export audit report">
+            <button class="btn" id="exportJson">JSON</button>
+            <button class="btn primary" id="exportPdf">PDF</button>
+            <button class="btn primary" id="exportDocx">DOCX</button>
+          </div>
         </div>
       </div>
 
@@ -1178,8 +1196,8 @@
       renderTraffic();
     }
 
-    function exportReport() {
-      const payload = {
+    function buildReportPayload() {
+      return {
         generated_at: new Date().toISOString(),
         security_blocks_today: state.securityBlocks,
         monthly_savings_usd: state.monthlySavings,
@@ -1188,13 +1206,207 @@
         departments,
         policies
       };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    }
+
+    function downloadBlob(blob, filename) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "mcp-agents-audit-report.json";
+      link.download = filename;
       link.click();
       URL.revokeObjectURL(url);
+    }
+
+    function exportJsonReport() {
+      const payload = buildReportPayload();
+      downloadBlob(
+        new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }),
+        "mcp-agents-audit-report.json"
+      );
+    }
+
+    function reportRows(payload) {
+      return [
+        ["Generated", new Date(payload.generated_at).toLocaleString()],
+        ["Security blocks today", String(payload.security_blocks_today)],
+        ["Monthly savings", formatMoney(payload.monthly_savings_usd)],
+        ["Cache hit rate", payload.cache_hit_rate + "%"],
+        ["Trace coverage", "100%"],
+        ["Gateway status", "Enforcing policy"]
+      ];
+    }
+
+    function exportPdfReport() {
+      if (!window.jspdf?.jsPDF) {
+        exportJsonReport();
+        alert("PDF library is still loading. Downloaded JSON instead. Please try PDF again in a moment.");
+        return;
+      }
+
+      const payload = buildReportPayload();
+      const doc = new window.jspdf.jsPDF({ unit: "pt", format: "a4" });
+      const margin = 48;
+      let y = 52;
+
+      function write(text, size = 10, options = {}) {
+        doc.setFont("helvetica", options.bold ? "bold" : "normal");
+        doc.setFontSize(size);
+        doc.setTextColor(options.color || "#14213d");
+        const lines = doc.splitTextToSize(text, 500);
+        doc.text(lines, margin, y);
+        y += lines.length * (size + 5);
+      }
+
+      function section(title) {
+        y += 14;
+        doc.setDrawColor("#d8e0ea");
+        doc.line(margin, y, 545, y);
+        y += 22;
+        write(title, 13, { bold: true });
+      }
+
+      function ensureRoom(space = 72) {
+        if (y + space > 760) {
+          doc.addPage();
+          y = 52;
+        }
+      }
+
+      write("MCP Agents Audit Report", 22, { bold: true });
+      write("Enterprise AI Gateway security, cost, and traceability summary.", 11, { color: "#617085" });
+
+      section("Executive Summary");
+      reportRows(payload).forEach(([label, value]) => {
+        ensureRoom();
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.text(label, margin, y);
+        doc.setFont("helvetica", "normal");
+        doc.text(value, 220, y);
+        y += 20;
+      });
+
+      section("Live AI Traffic");
+      payload.traffic.forEach((item) => {
+        ensureRoom();
+        write(`${item.user} | ${item.dept} | ${item.model} | ${item.policy} | ${formatMoney(item.cost)}`, 10);
+      });
+
+      section("Department Budgets");
+      payload.departments.forEach((dept) => {
+        ensureRoom();
+        const pct = Math.round((dept.spend / dept.budget) * 100);
+        write(`${dept.name}: ${formatMoney(dept.spend)} of ${formatMoney(dept.budget)} used (${pct}%)`, 10);
+      });
+
+      section("DLP Policies");
+      payload.policies.forEach((policy) => {
+        ensureRoom();
+        write(`${policy.name}: ${policy.status}, ${policy.hits} matches in the last 24 hours`, 10);
+      });
+
+      doc.save("mcp-agents-audit-report.pdf");
+    }
+
+    function escapeXml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function docxParagraph(text, style = "") {
+      return `<w:p>${style}<w:r><w:t>${escapeXml(text)}</w:t></w:r></w:p>`;
+    }
+
+    function docxHeading(text) {
+      return docxParagraph(text, '<w:pPr><w:pStyle w:val="Heading1"/></w:pPr>');
+    }
+
+    function docxTable(rows) {
+      const cells = rows.map((row) => `
+        <w:tr>
+          ${row.map((cell) => `
+            <w:tc>
+              <w:tcPr><w:tcW w:w="4500" w:type="dxa"/></w:tcPr>
+              ${docxParagraph(cell)}
+            </w:tc>
+          `).join("")}
+        </w:tr>
+      `).join("");
+      return `<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/></w:tblPr>${cells}</w:tbl>`;
+    }
+
+    async function exportDocxReport() {
+      if (!window.JSZip) {
+        exportJsonReport();
+        alert("DOCX library is still loading. Downloaded JSON instead. Please try DOCX again in a moment.");
+        return;
+      }
+
+      const payload = buildReportPayload();
+      const summaryRows = [["Metric", "Value"], ...reportRows(payload)];
+      const trafficRows = [["User", "Department", "Model", "Policy", "Cost"], ...payload.traffic.map((item) => [
+        item.user,
+        item.dept,
+        item.model,
+        item.policy,
+        formatMoney(item.cost)
+      ])];
+      const deptRows = [["Department", "Spend", "Budget", "Used"], ...payload.departments.map((dept) => [
+        dept.name,
+        formatMoney(dept.spend),
+        formatMoney(dept.budget),
+        Math.round((dept.spend / dept.budget) * 100) + "%"
+      ])];
+      const policyRows = [["Policy", "Status", "24h Matches"], ...payload.policies.map((policy) => [
+        policy.name,
+        policy.status,
+        String(policy.hits)
+      ])];
+
+      const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+          <w:body>
+            ${docxParagraph("MCP Agents Audit Report", '<w:pPr><w:pStyle w:val="Title"/></w:pPr>')}
+            ${docxParagraph("Enterprise AI Gateway security, cost, and traceability summary.")}
+            ${docxHeading("Executive Summary")}
+            ${docxTable(summaryRows)}
+            ${docxHeading("Live AI Traffic")}
+            ${docxTable(trafficRows)}
+            ${docxHeading("Department Budgets")}
+            ${docxTable(deptRows)}
+            ${docxHeading("DLP Policies")}
+            ${docxTable(policyRows)}
+            <w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr>
+          </w:body>
+        </w:document>`;
+
+      const zip = new JSZip();
+      zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+          <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+          <Default Extension="xml" ContentType="application/xml"/>
+          <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+          <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+        </Types>`);
+      zip.folder("_rels").file(".rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+          <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+        </Relationships>`);
+      zip.folder("word").file("document.xml", documentXml);
+      zip.folder("word").file("styles.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+          <w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:rPr><w:b/><w:sz w:val="36"/></w:rPr></w:style>
+          <w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:rPr><w:b/><w:sz w:val="28"/></w:rPr></w:style>
+        </w:styles>`);
+
+      const blob = await zip.generateAsync({
+        type: "blob",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      });
+      downloadBlob(blob, "mcp-agents-audit-report.docx");
     }
 
     document.querySelectorAll(".nav-button").forEach((button) => {
@@ -1202,7 +1414,9 @@
     });
 
     document.getElementById("simulateSpike").addEventListener("click", simulateSpike);
-    document.getElementById("exportReport").addEventListener("click", exportReport);
+    document.getElementById("exportJson").addEventListener("click", exportJsonReport);
+    document.getElementById("exportPdf").addEventListener("click", exportPdfReport);
+    document.getElementById("exportDocx").addEventListener("click", exportDocxReport);
     document.getElementById("runGuard").addEventListener("click", runGuard);
     document.getElementById("loadSafePrompt").addEventListener("click", () => {
       document.getElementById("promptInput").value = "Summarize the Q2 product launch feedback and route routine sentiment analysis to the lowest-cost approved model.";
